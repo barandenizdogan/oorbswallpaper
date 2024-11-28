@@ -3,12 +3,13 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+export 'package:google_mobile_ads/google_mobile_ads.dart';
 
 // Learn more about displaying interstitial ads:
 // https://developers.google.com/admob/flutter/interstitial
 
-InterstitialAd _interstitialAd;
-String _loadingInterstitialAdUnitId;
+InterstitialAd? _interstitialAd;
+String? _loadingInterstitialAdUnitId;
 
 void loadInterstitialAd(
   String iosAdUnitId,
@@ -21,9 +22,12 @@ void loadInterstitialAd(
   }
   String adUnitId;
   if (Platform.isIOS) {
-    adUnitId = showTestAds ? InterstitialAd.testAdUnitId : iosAdUnitId;
+    adUnitId =
+        showTestAds ? 'ca-app-pub-3940256099942544/4411468910' : iosAdUnitId;
   } else if (Platform.isAndroid) {
-    adUnitId = showTestAds ? InterstitialAd.testAdUnitId : androidAdUnitId;
+    adUnitId = showTestAds
+        ? 'ca-app-pub-3940256099942544/1033173712'
+        : androidAdUnitId;
   } else {
     print("AdMob is not supported on this platform.");
     return;
@@ -66,7 +70,7 @@ Future<bool> showInterstitialAd() async {
     return true;
   }
   final completer = Completer<bool>();
-  _interstitialAd.fullScreenContentCallback = FullScreenContentCallback(
+  _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
     onAdDismissedFullScreenContent: (InterstitialAd ad) {
       ad.dispose();
       _interstitialAd = null;
@@ -79,6 +83,46 @@ Future<bool> showInterstitialAd() async {
       completer.complete(false);
     },
   );
-  _interstitialAd.show();
+  _interstitialAd!.show();
   return completer.future;
+}
+
+void adMobRequestConsent() {
+  if (kIsWeb) {
+    print('AdMob is not supported on web.');
+    return;
+  }
+
+  ConsentRequestParameters params = ConsentRequestParameters();
+
+  ConsentInformation.instance.requestConsentInfoUpdate(params, () async {
+    if (await ConsentInformation.instance.isConsentFormAvailable()) {
+      loadForm();
+    }
+  }, (error) {});
+}
+
+void loadForm() {
+  ConsentForm.loadConsentForm((consentForm) async {
+    var status = await ConsentInformation.instance.getConsentStatus();
+    if (status == ConsentStatus.required) {
+      consentForm.show((error) {
+        loadForm();
+      });
+    }
+  }, (error) {});
+}
+
+Future<bool> checkConsentNotRequired() async {
+  var status = await ConsentInformation.instance.getConsentStatus();
+  return status == ConsentStatus.notRequired;
+}
+
+void adMobUpdateRequestConfiguration() {
+  if (kIsWeb) {
+    print('AdMob is not supported on web.');
+    return;
+  }
+  final RequestConfiguration requestConfiguration = RequestConfiguration();
+  MobileAds.instance.updateRequestConfiguration(requestConfiguration);
 }

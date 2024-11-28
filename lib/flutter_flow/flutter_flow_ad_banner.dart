@@ -2,23 +2,24 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class FlutterFlowAdBanner extends StatefulWidget {
   const FlutterFlowAdBanner({
-    Key key,
+    Key? key,
     this.width,
     this.height,
-    @required this.showsTestAd,
+    required this.showsTestAd,
     this.iOSAdUnitID,
     this.androidAdUnitID,
   }) : super(key: key);
 
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
   final bool showsTestAd;
-  final String iOSAdUnitID;
-  final String androidAdUnitID;
+  final String? iOSAdUnitID;
+  final String? androidAdUnitID;
 
   @override
   _FlutterFlowAdBannerState createState() => _FlutterFlowAdBannerState();
@@ -27,14 +28,16 @@ class FlutterFlowAdBanner extends StatefulWidget {
 class _FlutterFlowAdBannerState extends State<FlutterFlowAdBanner> {
   static const AdRequest request = AdRequest();
 
-  BannerAd _anchoredBanner;
-  AdWidget adWidget;
+  BannerAd? _anchoredBanner;
+  AdWidget? adWidget;
 
   @override
   void initState() {
     super.initState();
 
-    _createAnchoredBanner(context);
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _createAnchoredBanner(context);
+    });
   }
 
   @override
@@ -61,8 +64,8 @@ class _FlutterFlowAdBannerState extends State<FlutterFlowAdBanner> {
         ? Container(
             alignment: Alignment.center,
             color: Colors.red,
-            width: _anchoredBanner.size.width.toDouble(),
-            height: _anchoredBanner.size.height.toDouble(),
+            width: _anchoredBanner!.size.width.toDouble(),
+            height: _anchoredBanner!.size.height.toDouble(),
             child: adWidget,
           )
         : Container(
@@ -82,16 +85,16 @@ class _FlutterFlowAdBannerState extends State<FlutterFlowAdBanner> {
   }
 
   Future _createAnchoredBanner(BuildContext context) async {
-    final AdSize size = widget.width != null && widget.height != null
+    final AdSize? size = widget.width != null && widget.height != null
         ? AdSize(
-            height: widget.height.toInt(),
-            width: widget.width.toInt(),
+            height: widget.height!.toInt(),
+            width: widget.width!.toInt(),
           )
         : await AdSize.getAnchoredAdaptiveBannerAdSize(
             widget.width == null ? Orientation.portrait : Orientation.landscape,
             widget.width == null
-                ? MediaQuery.of(context).size.width.truncate()
-                : MediaQuery.of(context).size.height.truncate(),
+                ? MediaQuery.sizeOf(context).width.truncate()
+                : MediaQuery.sizeOf(context).height.truncate(),
           );
 
     if (size == null) {
@@ -108,8 +111,8 @@ class _FlutterFlowAdBannerState extends State<FlutterFlowAdBanner> {
               ? 'ca-app-pub-3940256099942544/6300978111'
               : 'ca-app-pub-3940256099942544/2934735716'
           : isAndroid
-              ? widget.androidAdUnitID
-              : widget.iOSAdUnitID,
+              ? widget.androidAdUnitID!
+              : widget.iOSAdUnitID!,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
           print('$BannerAd loaded.');
@@ -128,7 +131,9 @@ class _FlutterFlowAdBannerState extends State<FlutterFlowAdBanner> {
     await banner.load();
 
     adWidget = AdWidget(ad: banner);
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
     return;
   }
 }

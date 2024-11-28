@@ -28,10 +28,10 @@ import 'package:flutter/material.dart';
 
 class FlutterFlowLanguageSelector extends StatelessWidget {
   const FlutterFlowLanguageSelector({
-    Key key,
-    @required this.currentLanguage,
-    @required this.languages,
-    @required this.onChanged,
+    Key? key,
+    required this.currentLanguage,
+    required this.languages,
+    required this.onChanged,
     this.width,
     this.height,
     this.backgroundColor,
@@ -46,21 +46,21 @@ class FlutterFlowLanguageSelector extends StatelessWidget {
     this.dropdownIcon,
   }) : super(key: key);
 
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
   final String currentLanguage;
   final List<String> languages;
   final Function(String) onChanged;
-  final Color backgroundColor;
-  final Color borderColor;
+  final Color? backgroundColor;
+  final Color? borderColor;
   final double borderRadius;
-  final TextStyle textStyle;
+  final TextStyle? textStyle;
   final bool hideFlags;
   final double flagSize;
-  final double flagTextGap;
-  final Color dropdownColor;
-  final Color dropdownIconColor;
-  final IconData dropdownIcon;
+  final double? flagTextGap;
+  final Color? dropdownColor;
+  final Color? dropdownIconColor;
+  final IconData? dropdownIcon;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -90,9 +90,9 @@ class FlutterFlowLanguageSelector extends StatelessWidget {
 
 class _LanguagePickerItem extends StatelessWidget {
   const _LanguagePickerItem({
-    Key key,
-    @required this.language,
-    @required this.languages,
+    Key? key,
+    required this.language,
+    required this.languages,
     this.textStyle,
     this.hideFlags = false,
     this.flagSize = 24.0,
@@ -101,10 +101,10 @@ class _LanguagePickerItem extends StatelessWidget {
 
   final String language;
   final List<String> languages;
-  final TextStyle textStyle;
+  final TextStyle? textStyle;
   final bool hideFlags;
   final double flagSize;
-  final double flagTextGap;
+  final double? flagTextGap;
 
   @override
   Widget build(BuildContext context) {
@@ -112,11 +112,11 @@ class _LanguagePickerItem extends StatelessWidget {
     Widget flagWidget = Container();
     if (flagInfo is String) {
       final flagEmoji = EmojiConverter.fromAlpha2CountryCode(flagInfo);
-      flagWidget = Text(
-        flagEmoji,
-        style: const TextStyle(
-          fontSize: 20.0,
-          height: 1.5,
+      flagWidget = Padding(
+        padding: const EdgeInsets.only(bottom: 2.0),
+        child: Text(
+          flagEmoji,
+          style: const TextStyle(fontSize: 20.0),
         ),
       );
     } else if (flagInfo is Map) {
@@ -157,10 +157,10 @@ class _LanguagePickerItem extends StatelessWidget {
 /// Provides a customizable [DropdownButton] for all languages
 class _LanguagePickerDropdown extends StatelessWidget {
   const _LanguagePickerDropdown({
-    @required this.itemBuilder,
-    @required this.currentLanguage,
-    @required this.onChanged,
-    this.languages,
+    required this.itemBuilder,
+    required this.currentLanguage,
+    required this.onChanged,
+    required this.languages,
     this.backgroundColor,
     this.borderColor = const Color(0xFF262D34),
     this.borderRadius = 8.0,
@@ -181,12 +181,12 @@ class _LanguagePickerDropdown extends StatelessWidget {
   /// List of languages available in this picker.
   final Map<String, Language> languages;
 
-  final Color backgroundColor;
-  final Color borderColor;
+  final Color? backgroundColor;
+  final Color? borderColor;
   final double borderRadius;
-  final Color dropdownColor;
-  final Color dropdownIconColor;
-  final IconData dropdownIcon;
+  final Color? dropdownColor;
+  final Color? dropdownIconColor;
+  final IconData? dropdownIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -249,8 +249,8 @@ class Language {
   Language(this.isoCode, this.name);
 
   Language.fromMap(Map<String, String> map)
-      : name = map['name'],
-        isoCode = map['isoCode'];
+      : name = map['name']!,
+        isoCode = map['isoCode']!;
 
   final String name;
   final String isoCode;
@@ -259,7 +259,7 @@ class Language {
 Map<String, Language> _languageMap(Set<String> languages) => Map.fromEntries(
       _defaultLanguagesList
           .where((element) => languages.contains(element['isoCode']))
-          .map((e) => MapEntry(e['isoCode'], Language.fromMap(e))),
+          .map((e) => MapEntry(e['isoCode']!, Language.fromMap(e))),
     );
 
 final List<Map<String, String>> _defaultLanguagesList = [
@@ -271,21 +271,21 @@ final List<Map<String, String>> _defaultLanguagesList = [
   {"isoCode": "ar", "name": "العربية"},
   {"isoCode": "hy", "name": "Հայերեն"},
   {"isoCode": "as", "name": "অসমীয়া"},
-  {"isoCode": "ay", "name": "aymar"},
-  {"isoCode": "az", "name": "azərbaycan"},
-  {"isoCode": "bm", "name": "bamanankan"},
+  {"isoCode": "ay", "name": "Aymar"},
+  {"isoCode": "az", "name": "Azərbaycan"},
+  {"isoCode": "bm", "name": "Bamanankan"},
   {"isoCode": "ba", "name": "башҡорт теле"},
-  {"isoCode": "eu", "name": "euskara, euskera"},
+  {"isoCode": "eu", "name": "Euskara, Euskera"},
   {"isoCode": "be", "name": "беларуская мова"},
   {"isoCode": "bn", "name": "বাংলা"},
   {"isoCode": "bh", "name": "भोजपुरी"},
   {"isoCode": "bi", "name": "Bislama"},
   {"isoCode": "nb", "name": "Norsk bokmål"},
-  {"isoCode": "bs", "name": "bosanski jezik"},
-  {"isoCode": "br", "name": "brezhoneg"},
+  {"isoCode": "bs", "name": "Bosanski jezik"},
+  {"isoCode": "br", "name": "Brezhoneg"},
   {"isoCode": "bg", "name": "български език"},
   {"isoCode": "my", "name": "ဗမာစာ"},
-  {"isoCode": "ca", "name": "català"},
+  {"isoCode": "ca", "name": "Català"},
   {"isoCode": "km", "name": "ភាសាខ្មែរ"},
   {"isoCode": "ch", "name": "Chamoru"},
   {"isoCode": "ce", "name": "нохчийн мотт"},
@@ -307,10 +307,10 @@ final List<Map<String, String>> _defaultLanguagesList = [
   {"isoCode": "fo", "name": "føroyskt"},
   {"isoCode": "fj", "name": "vosa Vakaviti"},
   {"isoCode": "fi", "name": "suomi"},
-  {"isoCode": "fr", "name": "français"},
+  {"isoCode": "fr", "name": "Français"},
   {"isoCode": "ff", "name": "Fulfulde"},
   {"isoCode": "gd", "name": "Gàidhlig"},
-  {"isoCode": "gl", "name": "galego"},
+  {"isoCode": "gl", "name": "Galego"},
   {"isoCode": "lg", "name": "Luganda"},
   {"isoCode": "ka", "name": "ქართული"},
   {"isoCode": "de", "name": "Deutsch"},
@@ -323,7 +323,7 @@ final List<Map<String, String>> _defaultLanguagesList = [
   {"isoCode": "hz", "name": "Otjiherero"},
   {"isoCode": "hi", "name": "हिन्दी, हिंदी"},
   {"isoCode": "ho", "name": "Hiri Motu"},
-  {"isoCode": "hu", "name": "magyar"},
+  {"isoCode": "hu", "name": "Magyar"},
   {"isoCode": "is", "name": "Íslenska"},
   {"isoCode": "io", "name": "Ido"},
   {"isoCode": "ig", "name": "Asụsụ Igbo"},
@@ -336,7 +336,7 @@ final List<Map<String, String>> _defaultLanguagesList = [
   {"isoCode": "it", "name": "Italiano"},
   {"isoCode": "ja", "name": "日本語 (にほんご)"},
   {"isoCode": "jv", "name": "ꦧꦱꦗꦮ"},
-  {"isoCode": "kl", "name": "kalaallisut"},
+  {"isoCode": "kl", "name": "Kalaallisut"},
   {"isoCode": "kn", "name": "ಕನ್ನಡ"},
   {"isoCode": "kr", "name": "Kanuri"},
   {"isoCode": "ks", "name": "कश्मीरी"},
@@ -350,7 +350,7 @@ final List<Map<String, String>> _defaultLanguagesList = [
   {"isoCode": "kj", "name": "Kuanyama"},
   {"isoCode": "ku", "name": "Kurdî"},
   {"isoCode": "lo", "name": "ພາສາລາວ"},
-  {"isoCode": "la", "name": "latine"},
+  {"isoCode": "la", "name": "Latine"},
   {"isoCode": "lv", "name": "latviešu valoda"},
   {"isoCode": "li", "name": "Limburgs"},
   {"isoCode": "ln", "name": "Lingála"},
@@ -359,7 +359,7 @@ final List<Map<String, String>> _defaultLanguagesList = [
   {"isoCode": "lb", "name": "Lëtzebuergesch"},
   {"isoCode": "mk", "name": "македонски јазик"},
   {"isoCode": "mg", "name": "fiteny malagasy"},
-  {"isoCode": "ms", "name": "bahasa Melayu"},
+  {"isoCode": "ms", "name": "Bahasa Melayu"},
   {"isoCode": "ml", "name": "മലയാളം"},
   {"isoCode": "mt", "name": "Malti"},
   {"isoCode": "gv", "name": "Gaelg, Gailck"},
@@ -376,7 +376,7 @@ final List<Map<String, String>> _defaultLanguagesList = [
   {"isoCode": "se", "name": "Davvisámegiella"},
   {"isoCode": "no", "name": "Norsk"},
   {"isoCode": "nn", "name": "Norsk nynorsk"},
-  {"isoCode": "oc", "name": "occitan"},
+  {"isoCode": "oc", "name": "Occitan"},
   {"isoCode": "oj", "name": "ᐊᓂᔑᓈᐯᒧᐎᓐ"},
   {"isoCode": "or", "name": "ଓଡ଼ିଆ"},
   {"isoCode": "om", "name": "Afaan Oromoo"},
@@ -384,7 +384,7 @@ final List<Map<String, String>> _defaultLanguagesList = [
   {"isoCode": "pi", "name": "पाऴि"},
   {"isoCode": "pa", "name": "ਪੰਜਾਬੀ"},
   {"isoCode": "fa", "name": "فارسی"},
-  {"isoCode": "pl", "name": "polszczyzna"},
+  {"isoCode": "pl", "name": "Polski"},
   {"isoCode": "pt", "name": "Português"},
   {"isoCode": "ps", "name": "پښتو"},
   {"isoCode": "qu", "name": "Runa Simi, Kichwa"},
@@ -492,6 +492,7 @@ final Map<String, dynamic> languageToCountryInfo = {
   "fr": "fr",
   "gaa": "gh",
   "ka": "ge",
+  "kl": "gl",
   "de": "de",
   "el": "gr",
   "gu": "in",

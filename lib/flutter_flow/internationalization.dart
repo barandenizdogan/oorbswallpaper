@@ -1,5 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+const _kLocaleStorageKey = '__locale_key__';
 
 class FFLocalizations {
   FFLocalizations(this.locale);
@@ -7,31 +11,113 @@ class FFLocalizations {
   final Locale locale;
 
   static FFLocalizations of(BuildContext context) =>
-      Localizations.of<FFLocalizations>(context, FFLocalizations);
+      Localizations.of<FFLocalizations>(context, FFLocalizations)!;
 
   static List<String> languages() => ['en', 'tr'];
 
-  String get languageCode => locale.languageCode;
+  static late SharedPreferences _prefs;
+  static Future initialize() async =>
+      _prefs = await SharedPreferences.getInstance();
+  static Future storeLocale(String locale) =>
+      _prefs.setString(_kLocaleStorageKey, locale);
+  static Locale? getStoredLocale() {
+    final locale = _prefs.getString(_kLocaleStorageKey);
+    return locale != null && locale.isNotEmpty ? createLocale(locale) : null;
+  }
+
+  String get languageCode => locale.toString();
+  String? get languageShortCode =>
+      _languagesWithShortCode.contains(locale.toString())
+          ? '${locale.toString()}_short'
+          : null;
   int get languageIndex => languages().contains(languageCode)
       ? languages().indexOf(languageCode)
       : 0;
 
   String getText(String key) =>
-      (kTranslationsMap[key] ?? {})[locale.languageCode] ?? '';
+      (kTranslationsMap[key] ?? {})[locale.toString()] ?? '';
 
   String getVariableText({
-    String enText = '',
-    String trText = '',
+    String? enText = '',
+    String? trText = '',
   }) =>
       [enText, trText][languageIndex] ?? '';
+
+  static const Set<String> _languagesWithShortCode = {
+    'ar',
+    'az',
+    'ca',
+    'cs',
+    'da',
+    'de',
+    'dv',
+    'en',
+    'es',
+    'et',
+    'fi',
+    'fr',
+    'gr',
+    'he',
+    'hi',
+    'hu',
+    'it',
+    'km',
+    'ku',
+    'mn',
+    'ms',
+    'no',
+    'pt',
+    'ro',
+    'ru',
+    'rw',
+    'sv',
+    'th',
+    'uk',
+    'vi',
+  };
+}
+
+/// Used if the locale is not supported by GlobalMaterialLocalizations.
+class FallbackMaterialLocalizationDelegate
+    extends LocalizationsDelegate<MaterialLocalizations> {
+  const FallbackMaterialLocalizationDelegate();
+
+  @override
+  bool isSupported(Locale locale) => _isSupportedLocale(locale);
+
+  @override
+  Future<MaterialLocalizations> load(Locale locale) async =>
+      SynchronousFuture<MaterialLocalizations>(
+        const DefaultMaterialLocalizations(),
+      );
+
+  @override
+  bool shouldReload(FallbackMaterialLocalizationDelegate old) => false;
+}
+
+/// Used if the locale is not supported by GlobalCupertinoLocalizations.
+class FallbackCupertinoLocalizationDelegate
+    extends LocalizationsDelegate<CupertinoLocalizations> {
+  const FallbackCupertinoLocalizationDelegate();
+
+  @override
+  bool isSupported(Locale locale) => _isSupportedLocale(locale);
+
+  @override
+  Future<CupertinoLocalizations> load(Locale locale) =>
+      SynchronousFuture<CupertinoLocalizations>(
+        const DefaultCupertinoLocalizations(),
+      );
+
+  @override
+  bool shouldReload(FallbackCupertinoLocalizationDelegate old) => false;
 }
 
 class FFLocalizationsDelegate extends LocalizationsDelegate<FFLocalizations> {
   const FFLocalizationsDelegate();
 
   @override
-  bool isSupported(Locale locale) =>
-      FFLocalizations.languages().contains(locale.languageCode);
+  bool isSupported(Locale locale) => _isSupportedLocale(locale);
 
   @override
   Future<FFLocalizations> load(Locale locale) =>
@@ -41,39 +127,25 @@ class FFLocalizationsDelegate extends LocalizationsDelegate<FFLocalizations> {
   bool shouldReload(FFLocalizationsDelegate old) => false;
 }
 
+Locale createLocale(String language) => language.contains('_')
+    ? Locale.fromSubtags(
+        languageCode: language.split('_').first,
+        scriptCode: language.split('_').last,
+      )
+    : Locale(language);
+
+bool _isSupportedLocale(Locale locale) {
+  final language = locale.toString();
+  return FFLocalizations.languages().contains(
+    language.endsWith('_')
+        ? language.substring(0, language.length - 1)
+        : language,
+  );
+}
+
 final kTranslationsMap = <Map<String, Map<String, String>>>[
   // giris
   {
-    'hmfdi66g': {
-      'en': 'Circadian',
-      'tr': 'Sirkadiyen',
-    },
-    'jmazejxe': {
-      'en': 'from thousands of excellent perspectives',
-      'tr': 'binlerce, mükemmel perspektifler arasından',
-    },
-    '6uuzslri': {
-      'en': 'Collections',
-      'tr': 'Koleksiyonlar',
-    },
-    'i4fphggi': {
-      'en': 'compiled for you',
-      'tr': 'sizin için derlendi',
-    },
-    '6qy9ft4f': {
-      'en': 'Let\'s get to the tutorial',
-      'tr': 'Hadi Tanıtıma Geçelim',
-    },
-    'i8ikl7b1': {
-      'en': 'Settings',
-      'tr': 'Ayarlar',
-    },
-    '7so9lilo': {
-      'en':
-          'How about a little tour to get to know the application? We promise we won\'t take up too much of your time.  If you want, you can access this tutorial from the settings menu later.',
-      'tr':
-          'Uygulamayı tanımak için küçük bir tura ne dersiniz? Çok fazla zamanınızı almayacağımıza söz veriyoruz. Dilerseniz bu eğitime daha sonra ayarlar menüsünden ulaşabilirsiniz.',
-    },
     '4fxojg66': {
       'en': '',
       'tr': '',
@@ -148,6 +220,14 @@ final kTranslationsMap = <Map<String, Map<String, String>>>[
       'en': 'Blurry',
       'tr': 'Bulanık',
     },
+    'avp14hpg': {
+      'en': 'Cars',
+      'tr': 'Rüya',
+    },
+    'tzfd8fs6': {
+      'en': 'Dream',
+      'tr': 'Rüya',
+    },
     'o8pksj67': {
       'en': 'Stratosphere',
       'tr': 'Stratosfer',
@@ -175,6 +255,14 @@ final kTranslationsMap = <Map<String, Map<String, String>>>[
     '1vove1i2': {
       'en': 'Always\nRefreshing',
       'tr': 'Her zaman\nYenileniyor...',
+    },
+    '31wh51t4': {
+      'en': 'Dream',
+      'tr': 'Rüya',
+    },
+    'cc28hxqi': {
+      'en': 'Dream',
+      'tr': 'Rüya',
     },
     'rlsy5qmk': {
       'en': 'Editorial...',
@@ -398,248 +486,6 @@ final kTranslationsMap = <Map<String, Map<String, String>>>[
       'en': 'Circadian',
       'tr': 'Sirkadiyen',
     },
-    '5lukg317': {
-      'en': 'Editorial',
-      'tr': 'Editörün Seçimi',
-    },
-    'hb1zuzrg': {
-      'en': 'Swipe right for different perspectives...',
-      'tr': 'Farklı perspektifler için sağa kaydırın...',
-    },
-    'u8t5wqli': {
-      'en': 'Tap to Download...',
-      'tr': 'İndirmek için tıklayın...',
-    },
-    'i3f9lbuj': {
-      'en': 'Would you like to support us?',
-      'tr': 'Bize destek olmak ister misiniz?',
-    },
-    'omooonn7': {
-      'en':
-          'When you click on the icon, you will be directed to the ad. In return you only support us.',
-      'tr':
-          'İkona tıkladığınızda, reklama yönlendirileceksiniz. Karşılığında, sadece bizi desteklemiş olursunuz.',
-    },
-    'cxdgh3gk': {
-      'en': 'Black',
-      'tr': 'Siyah',
-    },
-    'b78miquy': {
-      'en': 'Swipe right for different perspectives...',
-      'tr': 'Farklı perspektifler için sağa kaydırın...',
-    },
-    '1knpv1zp': {
-      'en': 'Tap to Download...',
-      'tr': 'İndirmek için tıklayın...',
-    },
-    'q3zyimd4': {
-      'en': 'Would you like to support us?',
-      'tr': 'Bize destek olmak ister misiniz?',
-    },
-    'g2v4fpea': {
-      'en':
-          'When you click on the icon, you will be directed to the ad. In return you only support us.',
-      'tr':
-          'İkona tıkladığınızda, reklama yönlendirileceksiniz. Karşılığında, sadece bizi desteklemiş olursunuz.',
-    },
-    'vuj33wwh': {
-      'en': 'Abstract',
-      'tr': 'Hayali',
-    },
-    'aotgr2a6': {
-      'en': 'Swipe right for different perspectives...',
-      'tr': 'Farklı perspektifler için sağa kaydırın...',
-    },
-    'sx8gyyya': {
-      'en': 'Tap to Download...',
-      'tr': 'İndirmek için tıklayın...',
-    },
-    'bbevk8h1': {
-      'en': 'Would you like to support us?',
-      'tr': 'Bize destek olmak ister misiniz?',
-    },
-    'pqu9verd': {
-      'en':
-          'When you click on the icon, you will be directed to the ad. In return you only support us.',
-      'tr':
-          'İkona tıkladığınızda, reklama yönlendirileceksiniz. Karşılığında, sadece bizi desteklemiş olursunuz.',
-    },
-    'qdv3dfgn': {
-      'en': 'Minimal',
-      'tr': 'Sade',
-    },
-    'f6ctdrlw': {
-      'en': 'Swipe right for different perspectives...',
-      'tr': 'Farklı perspektifler için sağa kaydırın...',
-    },
-    'mtz9a8sj': {
-      'en': 'Tap to Download...',
-      'tr': 'İndirmek için tıklayın...',
-    },
-    'ifh10h3s': {
-      'en': 'Would you like to support us?',
-      'tr': 'Bize destek olmak ister misiniz?',
-    },
-    '5vcpixpe': {
-      'en':
-          'When you click on the icon, you will be directed to the ad. In return you only support us.',
-      'tr':
-          'İkona tıkladığınızda, reklama yönlendirileceksiniz. Karşılığında, sadece bizi desteklemiş olursunuz.',
-    },
-    'z2uqgvsb': {
-      'en': 'Space',
-      'tr': 'Boşluk',
-    },
-    'kt1yft65': {
-      'en': 'Swipe right for different perspectives...',
-      'tr': 'Farklı perspektifler için sağa kaydırın...',
-    },
-    'krn6gpe8': {
-      'en': 'Tap to Download...',
-      'tr': 'İndirmek için tıklayın...',
-    },
-    'pft5vqtr': {
-      'en': 'Would you like to support us?',
-      'tr': 'Bize destek olmak ister misiniz?',
-    },
-    '9e8wejpf': {
-      'en':
-          'When you click on the icon, you will be directed to the ad. In return you only support us.',
-      'tr':
-          'İkona tıkladığınızda, reklama yönlendirileceksiniz. Karşılığında, sadece bizi desteklemiş olursunuz.',
-    },
-    'ono9xl19': {
-      'en': 'Neon',
-      'tr': 'Neon',
-    },
-    'kg594aph': {
-      'en': 'Swipe right for different perspectives...',
-      'tr': 'Farklı perspektifler için sağa kaydırın...',
-    },
-    'p99lq0lt': {
-      'en': 'Tap to Download...',
-      'tr': 'İndirmek için tıklayın...',
-    },
-    'uf98zt75': {
-      'en': 'Would you like to support us?',
-      'tr': 'Bize destek olmak ister misiniz?',
-    },
-    'sgbm8qdb': {
-      'en':
-          'When you click on the icon, you will be directed to the ad. In return you only support us.',
-      'tr':
-          'İkona tıkladığınızda, reklama yönlendirileceksiniz. Karşılığında, sadece bizi desteklemiş olursunuz.',
-    },
-    'vm3hgu15': {
-      'en': 'Night',
-      'tr': 'Gece',
-    },
-    'il5adsji': {
-      'en': 'Swipe right for different perspectives...',
-      'tr': 'Farklı perspektifler için sağa kaydırın...',
-    },
-    '3zmntut0': {
-      'en': 'Tap to Download...',
-      'tr': 'İndirmek için tıklayın...',
-    },
-    'pnmliwwv': {
-      'en': 'Would you like to support us?',
-      'tr': 'Bize destek olmak ister misiniz?',
-    },
-    '3ezhbwwk': {
-      'en':
-          'When you click on the icon, you will be directed to the ad. In return you only support us.',
-      'tr':
-          'İkona tıkladığınızda, reklama yönlendirileceksiniz. Karşılığında, sadece bizi desteklemiş olursunuz.',
-    },
-    'zclpk5pn': {
-      'en': 'Art',
-      'tr': 'Sanat',
-    },
-    'pecfz8zk': {
-      'en': 'Swipe right for different perspectives...',
-      'tr': 'Farklı perspektifler için sağa kaydırın...',
-    },
-    '0twfjhqi': {
-      'en': 'Tap to Download...',
-      'tr': 'İndirmek için tıklayın...',
-    },
-    '1xbz62wr': {
-      'en': 'Would you like to support us?',
-      'tr': 'Bize destek olmak ister misiniz?',
-    },
-    'e5hv100r': {
-      'en':
-          'When you click on the icon, you will be directed to the ad. In return you only support us.',
-      'tr':
-          'İkona tıkladığınızda, reklama yönlendirileceksiniz. Karşılığında, sadece bizi desteklemiş olursunuz.',
-    },
-    'ztle2eou': {
-      'en': 'Vintage',
-      'tr': 'Nostalji',
-    },
-    '3g9m677j': {
-      'en': 'Swipe right for different perspectives...',
-      'tr': 'Farklı perspektifler için sağa kaydırın...',
-    },
-    'ple0cnhl': {
-      'en': 'Tap to Download...',
-      'tr': 'İndirmek için tıklayın...',
-    },
-    'cik6z35v': {
-      'en': 'Would you like to support us?',
-      'tr': 'Bize destek olmak ister misiniz?',
-    },
-    '348h6f42': {
-      'en':
-          'When you click on the icon, you will be directed to the ad. In return you only support us.',
-      'tr':
-          'İkona tıkladığınızda, reklama yönlendirileceksiniz. Karşılığında, sadece bizi desteklemiş olursunuz.',
-    },
-    'nztypui7': {
-      'en': 'City',
-      'tr': 'Şehir',
-    },
-    'xl1j72mz': {
-      'en': 'Swipe right for different perspectives...',
-      'tr': 'Farklı perspektifler için sağa kaydırın...',
-    },
-    'hxu3rp28': {
-      'en': 'Tap to Download...',
-      'tr': 'İndirmek için tıklayın...',
-    },
-    '4io7gohu': {
-      'en': 'Would you like to support us?',
-      'tr': 'Bize destek olmak ister misiniz?',
-    },
-    'ntte1yhu': {
-      'en':
-          'When you click on the icon, you will be directed to the ad. In return you only support us.',
-      'tr':
-          'İkona tıkladığınızda, reklama yönlendirileceksiniz. Karşılığında, sadece bizi desteklemiş olursunuz.',
-    },
-    'cy03nkf7': {
-      'en': 'Nature',
-      'tr': 'Dünya',
-    },
-    'us9grynw': {
-      'en': 'New Circadians will always be with you.',
-      'tr': 'Yeni Sirkadiyenler her zaman sizlerle olacak.',
-    },
-    'djzjmlcr': {
-      'en': 'Tap to Download...',
-      'tr': 'İndirmek için tıklayın...',
-    },
-    'ccjx0kyq': {
-      'en': 'Would you like to support us?',
-      'tr': 'Bize destek olmak ister misiniz?',
-    },
-    'bpp0jcpj': {
-      'en':
-          'When you click on the icon, you will be directed to the ad. In return you only support us.',
-      'tr':
-          'İkona tıkladığınızda, reklama yönlendirileceksiniz. Karşılığında, sadece bizi desteklemiş olursunuz.',
-    },
     'i1k3a6y6': {
       'en': '',
       'tr': '',
@@ -679,16 +525,12 @@ final kTranslationsMap = <Map<String, Map<String, String>>>[
       'en': 'Contact Us',
       'tr': 'Bize Ulaşın',
     },
-    'fs1qheo0': {
-      'en': 'oorbs.studio',
-      'tr': 'oorbs.studio',
-    },
     'j0o6f1pj': {
-      'en': 'e-mail',
+      'en': 'info@invenire.com.tr',
       'tr': 'e-Posta',
     },
     'nbujs9gw': {
-      'en': 'Instagram',
+      'en': 'invenirecomtr',
       'tr': 'Instagram',
     },
     'k9mzyyeg': {
@@ -1187,6 +1029,96 @@ final kTranslationsMap = <Map<String, Map<String, String>>>[
     'a17ujw2c': {
       'en': '',
       'tr': '',
+    },
+  },
+  // gorunum
+  {
+    '4n4y8hwu': {
+      'en': 'Home',
+      'tr': '',
+    },
+  },
+  // collectionsComponent
+  {
+    'lou130q7': {
+      'en': 'WALLPAPER',
+      'tr': '',
+    },
+    'gnj1b29z': {
+      'en': 'Circadian',
+      'tr': 'Sirkadiyen',
+    },
+    '5ua6kcvj': {
+      'en': 'Refreshed daily',
+      'tr': '',
+    },
+    'wmj3q825': {
+      'en': 'Singularity',
+      'tr': 'Tekillik',
+    },
+    '2i47iihi': {
+      'en': 'Different',
+      'tr': 'Farklı',
+    },
+    'ybddrlgu': {
+      'en': 'Art',
+      'tr': 'Sanat',
+    },
+    'upuw9gdr': {
+      'en': 'Minimal',
+      'tr': 'Minimal',
+    },
+    'drnmr8ln': {
+      'en': 'Human',
+      'tr': 'Beşeri',
+    },
+    'h8j08o5g': {
+      'en': 'Instinct',
+      'tr': 'Güdü',
+    },
+    'chqozkjk': {
+      'en': 'Blurry',
+      'tr': 'Bulanık',
+    },
+    's4w9biuh': {
+      'en': 'Button',
+      'tr': '',
+    },
+    'it8jcik5': {
+      'en': 'Instinct',
+      'tr': 'Güdü',
+    },
+    'aoy3bfvr': {
+      'en': 'Stratosphere',
+      'tr': 'Stratosfer',
+    },
+    'px3ih9u6': {
+      'en': 'Petricor',
+      'tr': 'Yağmur',
+    },
+    'uea9kdb9': {
+      'en': 'Breath',
+      'tr': 'Nefes',
+    },
+    '2prxj4ou': {
+      'en': 'Dream',
+      'tr': 'Rüya',
+    },
+    'urmqi9dk': {
+      'en': 'Ghrelin',
+      'tr': 'Ghrelin',
+    },
+    'dkx3100o': {
+      'en': 'Silence',
+      'tr': 'Sessizlik',
+    },
+    'ixkn35hl': {
+      'en': 'Always\nRefreshing',
+      'tr': 'Her zaman\nYenileniyor...',
+    },
+    'n85oljqo': {
+      'en': 'Editorial...',
+      'tr': 'Farklı Seçimler...',
     },
   },
   // Miscellaneous

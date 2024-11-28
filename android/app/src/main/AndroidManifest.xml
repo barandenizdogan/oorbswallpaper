@@ -1,10 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="oorbs.studio.wallpaper"
+    package="invenire.wallpaper"
     xmlns:tools="http://schemas.android.com/tools">
-   <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
-   <application
-        android:label="OORBS"
+
+    <application
+        android:label="INVENIRE Wallpaper"
         tools:replace="android:label"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true">

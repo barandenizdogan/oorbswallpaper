@@ -1,4 +1,4 @@
-package oorbs.studio.wallpaper
+package invenire.wallpaper
 
 import io.flutter.embedding.android.FlutterActivity
 
